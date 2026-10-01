@@ -3,18 +3,20 @@ import { db } from "../firebase";
 import { WeddingData } from "../types";
 import { weddingData as defaultData } from "../data";
 
-// The parent official website document key for this project
-export const PARENT_TEMPLATE_ID = "remix_icbi4ygegjsukvhzbcijit-14313311583";
+// The master official website document key for this project
+export const MASTER_TEMPLATE_ID = "remix_icbi4ygegjsukvhzbcijit-14313311583";
+export const PARENT_TEMPLATE_ID = MASTER_TEMPLATE_ID;
 export const PARENT_DEPLOYMENT_HASH = "icbi4ygegjsukvhzbcijit-14313311583";
 
 /**
- * Computes an isolated template ID based on the current URL and deployment environment.
- * - If ?template=... is provided in the query string, it uses that explicitly.
- * - On the parent website deployment, it uses the official template ID.
- * - On Vercel or any other host, it uses a sanitized template ID.
+ * Computes the wedding data document ID.
+ * - If ?template=... is provided explicitly in the query string, it uses that custom template.
+ * - Otherwise, whether on Google AI Studio, Vercel, Netlify, Custom Domains, or Localhost:
+ *   it ALWAYS connects to the exact same master project document (MASTER_TEMPLATE_ID),
+ *   guaranteeing 100% data consistency across all deployments and hostings!
  */
 export function getDefaultTemplateId(): string {
-  if (typeof window === "undefined") return PARENT_TEMPLATE_ID;
+  if (typeof window === "undefined") return MASTER_TEMPLATE_ID;
 
   try {
     const searchParams = new URLSearchParams(window.location.search);
@@ -26,52 +28,9 @@ export function getDefaultTemplateId(): string {
     // Ignore URL parsing errors
   }
 
-  const hostname = window.location.hostname || "";
-
-  // Parent website deployment identifier:
-  if (hostname.includes(PARENT_DEPLOYMENT_HASH)) {
-    return PARENT_TEMPLATE_ID;
-  }
-
-  // Google AI Studio Remixes (Cloud Run run.app domains)
-  if (hostname.includes(".run.app")) {
-    // Both dev and preview links (ais-dev-XXX and ais-pre-XXX) share the same deployment core
-    const deploymentId = hostname
-      .replace(/^ais-(dev|pre)-/, "")
-      .replace(/\.asia-southeast1\.run\.app.*$/, "")
-      .replace(/\.run\.app.*$/, "")
-      .replace(/[^a-zA-Z0-9_-]/g, "_");
-
-    if (deploymentId) {
-      try {
-        const savedRemixName = localStorage.getItem(`remix_name_${deploymentId}`);
-        if (savedRemixName && savedRemixName.trim()) {
-          return savedRemixName.trim();
-        }
-      } catch {
-        // Ignore localStorage error
-      }
-      return `remix_${deploymentId}`;
-    }
-  }
-
-  // Local development fallback
-  if (hostname === "localhost" || hostname === "127.0.0.1" || !hostname) {
-    try {
-      let localId = localStorage.getItem("remix_template_id");
-      if (!localId || localId === "main 333") {
-        localId = PARENT_TEMPLATE_ID;
-        localStorage.setItem("remix_template_id", localId);
-      }
-      return localId;
-    } catch {
-      return PARENT_TEMPLATE_ID;
-    }
-  }
-
-  // Custom domain / Vercel host fallback
-  const sanitized = hostname.replace(/[^a-zA-Z0-9_-]/g, "_");
-  return `remix_${sanitized}`;
+  // By default, every deployment (AI Studio, Vercel, Netlify, custom domain, localhost)
+  // connects directly to the exact same master remix document.
+  return MASTER_TEMPLATE_ID;
 }
 
 /**
@@ -240,16 +199,20 @@ export async function saveWeddingData(templateId: string, data: WeddingData): Pr
 
   await setDoc(docRef, cleanData);
 
-  // If saving on the parent website, also keep the deployment URLs updated
-  if (safeTemplateId === PARENT_TEMPLATE_ID) {
+  // Keep local cache updated immediately
+  if (typeof window !== "undefined") {
     try {
-      const backupIds = [
-        "ais-dev-t2ilutj4md24vn2jr5zc7g-14313311583.asia-southeast1.run.app",
-        "ais-pre-t2ilutj4md24vn2jr5zc7g-14313311583.asia-southeast1.run.app"
-      ];
-      for (const backupId of backupIds) {
-        setDoc(doc(db, "weddingConfig", backupId), cleanData).catch(() => {});
-      }
+      localStorage.setItem(`cached_wedding_data_${safeTemplateId}`, JSON.stringify(cleanData));
+    } catch {
+      // non-blocking
+    }
+  }
+
+  // Also sync to Vercel mirror document so both are always 100% in sync
+  if (safeTemplateId === MASTER_TEMPLATE_ID) {
+    try {
+      const mirrorDoc = "remix_raghavwedsdivya-digiinvitations_vercel_app";
+      setDoc(doc(db, "weddingConfig", mirrorDoc), { ...cleanData, _templateId: mirrorDoc }).catch(() => {});
     } catch {
       // non-blocking
     }
