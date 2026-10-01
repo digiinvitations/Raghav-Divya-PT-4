@@ -208,11 +208,23 @@ export async function saveWeddingData(templateId: string, data: WeddingData): Pr
     }
   }
 
-  // Also sync to Vercel mirror document so both are always 100% in sync
-  if (safeTemplateId === MASTER_TEMPLATE_ID) {
+  // Also sync to all Vercel and hosting mirror documents so Vercel is always 100% updated in real-time
+  const VERCEL_MIRRORS = [
+    "remix_raghavwedsdivya-digiinvitations_vercel_app",
+    "remix_raghavwedsdivya-digiinvitationsggghh_vercel_app",
+    "wedding_data_raghavwedsdivya-digiinvitations_vercel_app",
+    "wedding_data_raghavwedsdivya-digiinvitationsggghh_vercel_app",
+    "ais-dev-t2ilutj4md24vn2jr5zc7g-14313311583.asia-southeast1.run.app",
+    "ais-pre-t2ilutj4md24vn2jr5zc7g-14313311583.asia-southeast1.run.app"
+  ];
+
+  if (safeTemplateId === MASTER_TEMPLATE_ID || VERCEL_MIRRORS.includes(safeTemplateId)) {
     try {
-      const mirrorDoc = "remix_raghavwedsdivya-digiinvitations_vercel_app";
-      setDoc(doc(db, "weddingConfig", mirrorDoc), { ...cleanData, _templateId: mirrorDoc }).catch(() => {});
+      await Promise.allSettled(
+        VERCEL_MIRRORS.map(mirrorDoc => 
+          setDoc(doc(db, "weddingConfig", mirrorDoc), { ...cleanData, _templateId: mirrorDoc })
+        )
+      );
     } catch {
       // non-blocking
     }
