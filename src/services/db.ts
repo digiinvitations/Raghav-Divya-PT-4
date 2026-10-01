@@ -3,16 +3,15 @@ import { db } from "../firebase";
 import { WeddingData } from "../types";
 import { weddingData as defaultData } from "../data";
 
-// The parent official website document key
-export const PARENT_TEMPLATE_ID = "main 333";
-export const PARENT_DEPLOYMENT_HASH = "t2ilutj4md24vn2jr5zc7g-14313311583";
+// The parent official website document key for this project
+export const PARENT_TEMPLATE_ID = "remix_icbi4ygegjsukvhzbcijit-14313311583";
+export const PARENT_DEPLOYMENT_HASH = "icbi4ygegjsukvhzbcijit-14313311583";
 
 /**
  * Computes an isolated template ID based on the current URL and deployment environment.
  * - If ?template=... is provided in the query string, it uses that explicitly.
- * - On the parent website deployment (t2ilutj4md24vn2jr5zc7g-14313311583), it uses "main 333".
- * - On any new remix or other Cloud Run container, it generates a unique ID tied to that remix,
- *   ensuring remixes NEVER collide or overwrite the parent website or each other.
+ * - On the parent website deployment, it uses the official template ID.
+ * - On Vercel or any other host, it uses a sanitized template ID.
  */
 export function getDefaultTemplateId(): string {
   if (typeof window === "undefined") return PARENT_TEMPLATE_ID;
@@ -44,7 +43,6 @@ export function getDefaultTemplateId(): string {
       .replace(/[^a-zA-Z0-9_-]/g, "_");
 
     if (deploymentId) {
-      // Check if user previously assigned a clean custom remix name in this browser
       try {
         const savedRemixName = localStorage.getItem(`remix_name_${deploymentId}`);
         if (savedRemixName && savedRemixName.trim()) {
@@ -57,21 +55,21 @@ export function getDefaultTemplateId(): string {
     }
   }
 
-  // Local development fallback: generate a dedicated local remix ID so local runs never overwrite parent
+  // Local development fallback
   if (hostname === "localhost" || hostname === "127.0.0.1" || !hostname) {
     try {
       let localId = localStorage.getItem("remix_template_id");
-      if (!localId || localId === PARENT_TEMPLATE_ID) {
-        localId = `remix_local_${Date.now().toString().slice(-4)}`;
+      if (!localId || localId === "main 333") {
+        localId = PARENT_TEMPLATE_ID;
         localStorage.setItem("remix_template_id", localId);
       }
       return localId;
     } catch {
-      return `remix_local`;
+      return PARENT_TEMPLATE_ID;
     }
   }
 
-  // Custom domain / third-party host fallback
+  // Custom domain / Vercel host fallback
   const sanitized = hostname.replace(/[^a-zA-Z0-9_-]/g, "_");
   return `remix_${sanitized}`;
 }
@@ -80,7 +78,7 @@ export function getDefaultTemplateId(): string {
  * Retrieves wedding data for a template/remix partition.
  * If this remix partition document does not exist yet in Firestore,
  * it immediately creates a new separate document and fields, populated with
- * the complete copy of the parent website ("main 333") data.
+ * the complete copy of the project data (Raghav & Divya).
  */
 export async function getWeddingData(templateId?: string): Promise<WeddingData> {
   const currentTemplate = (templateId && templateId.trim()) ? templateId.trim() : getDefaultTemplateId();
@@ -101,18 +99,58 @@ export async function getWeddingData(templateId?: string): Promise<WeddingData> 
         data.musicUrl = "";
       }
 
+      // AUTO-HEAL: If this document has old placeholder names Vijay or Vashnavi (e.g. from an old template copy on Vercel):
+      // Automatically patch it immediately with Raghav & Divya details and update Firestore!
+      if (
+        data.groom?.name?.includes("Vijay") || 
+        data.bride?.name?.includes("Vashnavi") ||
+        data.invitationMessage?.includes("Vijay") ||
+        data.invitationMessage?.includes("Vashnavi")
+      ) {
+        data.groom = {
+          ...data.groom,
+          name: defaultData.groom.name,
+          fatherName: defaultData.groom.fatherName || "Vasant Khatavkar",
+          motherName: defaultData.groom.motherName || "Saroja Khatavkar",
+          parents: defaultData.groom.parents || "Son of Saroja & Vasant Khatavkar"
+        };
+        data.bride = {
+          ...data.bride,
+          name: defaultData.bride.name,
+          fatherName: defaultData.bride.fatherName || "Rajesh Ghule",
+          motherName: defaultData.bride.motherName || "Leena Ghule",
+          parents: defaultData.bride.parents || "Daughter of Leena & Rajesh Ghule"
+        };
+        if (data.invitationMessage) {
+          data.invitationMessage = defaultData.invitationMessage;
+        }
+        if (data.events && Array.isArray(data.events)) {
+          data.events = data.events.map(ev => {
+            if (ev.hashtag && (ev.hashtag.includes("Vijay") || ev.hashtag.includes("Vashnavi"))) {
+              return { ...ev, hashtag: "#RaghavKiDivya" };
+            }
+            return ev;
+          });
+        }
+        // Save the healed data back to Firestore so it is permanently updated
+        setDoc(docRef, data, { merge: true }).catch(console.error);
+      }
+
       return data;
     } else {
       // Document does NOT exist yet!
-      // This is a brand new remix or newly created template section.
-      // Automatically copy all data and fields from the parent website ("main 333")
-      // so this remix inherits everything without overlapping.
+      // This is a brand new deployment or newly created section.
+      // Automatically use the default project data (Raghav & Divya)
       let sourceData: WeddingData = defaultData;
 
       try {
         const parentDocSnap = await getDoc(doc(db, "weddingConfig", PARENT_TEMPLATE_ID));
         if (parentDocSnap.exists()) {
-          sourceData = parentDocSnap.data() as WeddingData;
+          const parentData = parentDocSnap.data() as WeddingData;
+          // Ensure we only inherit from parent if parent is not old Vijay/Vashnavi
+          if (!parentData.groom?.name?.includes("Vijay")) {
+            sourceData = parentData;
+          }
         }
       } catch (err) {
         console.warn("Could not read parent template data, using bundled default data:", err);
