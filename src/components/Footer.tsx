@@ -35,17 +35,7 @@ export function Footer({ data }: FooterProps) {
 
   return (
     <footer className="py-12 bg-blush-light border-t border-pink-border flex flex-col items-center text-center px-4 relative">
-      <h4 className="font-serif text-2xl uppercase tracking-widest text-wine-dark font-bold mb-3 drop-shadow-sm">
-        {data.groom.name} &amp; {data.bride.name}
-      </h4>
-      
-      <div className="flex items-center gap-2 opacity-60 mb-8">
-        <div className="w-8 h-[1px] bg-wine-dark"></div>
-        <Heart className="w-3 h-3 text-wine-dark fill-wine-dark" />
-        <div className="w-8 h-[1px] bg-wine-dark"></div>
-      </div>
-      
-      <div className="flex flex-col items-center gap-3 mt-4 text-wine-dark/80 font-serif">
+      <div className="flex flex-col items-center gap-3 text-wine-dark/80 font-serif">
         <p className="text-xs font-bold tracking-wider uppercase flex items-center gap-2">
           Created with <Heart className="w-3 h-3 text-pink-accent fill-pink-accent" /> by digiinvitations_
           <a 
