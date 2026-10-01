@@ -16,14 +16,19 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
 
   useEffect(() => {
     if (shouldPlayVideo && videoRef.current) {
-      videoRef.current.play().catch(console.error);
+      videoRef.current.play().catch((err) => {
+        console.warn("Hero video autoplay failed, showing content:", err);
+        setShowText(true);
+        setIsEnded(true);
+        if (onVideoEnd) onVideoEnd();
+      });
     }
-  }, [shouldPlayVideo]);
+  }, [shouldPlayVideo, onVideoEnd]);
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
       const { currentTime } = videoRef.current;
-      if (currentTime >= 2) {
+      if (currentTime >= 1.5) {
         if (!showText) setShowText(true);
       }
     }
@@ -46,8 +51,15 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
             muted
             playsInline
             preload="auto"
+            poster={data.ogImageUrl || data.openingThumbnailUrl}
             onTimeUpdate={handleTimeUpdate}
             onEnded={handleEnded}
+            onError={() => {
+              console.warn("Hero video failed to load, falling back to text");
+              setShowText(true);
+              setIsEnded(true);
+              if (onVideoEnd) onVideoEnd();
+            }}
             className="w-full h-full object-cover"
           />
         ) : (

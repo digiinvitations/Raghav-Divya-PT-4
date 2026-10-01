@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "motion/react";
 import { HeartDivider } from "./HeartDivider";
 import { EventDetails } from "../types";
@@ -30,6 +30,8 @@ function EventCard({ event, index, globalLogo }: { event: EventDetails; index: n
         <img 
           src={event.backgroundUrl} 
           alt={event.title} 
+          loading="eager"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover z-0" 
         />
       ) : (
@@ -82,6 +84,8 @@ function EventCard({ event, index, globalLogo }: { event: EventDetails; index: n
             transition={{ duration: 1, delay: 0.4 }}
             src={globalLogo} 
             alt="Logo" 
+            loading="eager"
+            decoding="async"
             className="w-10 h-10 shrink-0 object-contain mb-2 drop-shadow-md rounded-full bg-white/30 backdrop-blur-md p-1.5 border border-white/40" 
           />
         )}
@@ -139,6 +143,8 @@ function EventCard({ event, index, globalLogo }: { event: EventDetails; index: n
           <img 
             src={event.caricatureUrl} 
             alt="Caricature" 
+            loading="eager"
+            decoding="async"
             className="w-48 h-48 object-contain drop-shadow-2xl" 
           />
         </motion.div>
@@ -151,15 +157,15 @@ export function Events({ events, globalLogo }: EventsProps) {
   if (!events || events.length === 0) return null;
 
   // Sort events automatically by date/time
-  const sortedEvents = [...events].sort((a, b) => {
-    // Attempt to parse dates, if they fail, fallback to 0 to maintain original order
-    const dateA = new Date(`${a.date} 2026 ${a.time || '12:00 PM'}`).getTime();
-    const dateB = new Date(`${b.date} 2026 ${b.time || '12:00 PM'}`).getTime();
-    if (!isNaN(dateA) && !isNaN(dateB)) return dateA - dateB;
-    // simple string compare fallback if it's YYYY-MM-DD
-    if (a.date !== b.date) return a.date.localeCompare(b.date);
-    return (a.time || "").localeCompare(b.time || "");
-  });
+  const sortedEvents = useMemo(() => {
+    return [...events].sort((a, b) => {
+      const dateA = new Date(`${a.date} 2026 ${a.time || '12:00 PM'}`).getTime();
+      const dateB = new Date(`${b.date} 2026 ${b.time || '12:00 PM'}`).getTime();
+      if (!isNaN(dateA) && !isNaN(dateB)) return dateA - dateB;
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      return (a.time || "").localeCompare(b.time || "");
+    });
+  }, [events]);
 
   // Smart Logo Cascading: If the Hero global logo is missing, look for any logo uploaded to ANY event and use it everywhere.
   const universalLogo = globalLogo || events.find(e => e.logoUrl)?.logoUrl;

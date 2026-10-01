@@ -115,15 +115,18 @@ function PublicView() {
     return <div className="min-h-screen bg-blush-main flex items-center justify-center font-serif text-wine-dark">Loading...</div>;
   }
 
-  if (isPreloading) {
-    return <Preloader data={data} onComplete={handlePreloadComplete} />;
-  }
-
   return (
     <div className={`w-full bg-blush-main relative mx-auto max-w-md shadow-2xl overflow-hidden sm:my-0 ${viewState !== 'main' ? 'h-[100svh]' : 'min-h-[100svh]'}`}>
       
+      {/* Preloader Overlay (z-[100000]): Preloads all files early while the DOM initializes in background */}
+      {isPreloading && (
+        <div className="fixed inset-0 z-[100000] pointer-events-auto">
+          <Preloader data={data} onComplete={handlePreloadComplete} />
+        </div>
+      )}
+
       {/* Audio player remains mounted across transitions */}
-      <MusicControl musicUrl={data.musicUrl} shouldPlay={viewState !== 'thumbnail'} />
+      <MusicControl musicUrl={data.musicUrl} shouldPlay={viewState !== 'thumbnail' && !isPreloading} />
 
       {/* Global Environment Animations (Petals, Birds, Butterflies) */}
       {viewState === 'main' && <EnvironmentEffects />}
@@ -153,7 +156,9 @@ function PublicView() {
             playsInline
             muted
             preload="auto"
+            poster={data.openingThumbnailUrl}
             onLoadedData={() => setIsVideoPlaying(true)}
+            onCanPlay={() => setIsVideoPlaying(true)}
             onError={() => {
               console.error("Failed to load opening video.");
               setViewState('main');
@@ -179,6 +184,8 @@ function PublicView() {
           <img 
             src={data.openingThumbnailUrl} 
             alt="Opening" 
+            loading="eager"
+            decoding="sync"
             className="absolute inset-0 w-full h-full object-contain" 
           />
           
