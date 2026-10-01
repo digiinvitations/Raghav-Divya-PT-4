@@ -14,9 +14,11 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
   const [isEnded, setIsEnded] = useState(!data.heroVideoUrl);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hasPlayedRef = useRef(false);
 
   useEffect(() => {
-    if (shouldPlayVideo && videoRef.current) {
+    if (shouldPlayVideo && videoRef.current && !hasPlayedRef.current) {
+      hasPlayedRef.current = true;
       videoRef.current.play().catch((err) => {
         console.warn("Hero video autoplay failed, showing content:", err);
         setShowText(true);
@@ -28,14 +30,27 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
-      const { currentTime } = videoRef.current;
+      const { currentTime, duration } = videoRef.current;
       if (currentTime >= 1.5) {
         if (!showText) setShowText(true);
+      }
+      // When near the end, freeze right on the last frame
+      if (duration && currentTime >= duration - 0.1) {
+        videoRef.current.pause();
+        setIsEnded(true);
+        setShowText(true);
+        if (onVideoEnd) onVideoEnd();
       }
     }
   };
 
   const handleEnded = () => {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      if (videoRef.current.duration) {
+        videoRef.current.currentTime = videoRef.current.duration - 0.05;
+      }
+    }
     setIsEnded(true);
     setShowText(true);
     if (onVideoEnd) onVideoEnd();
@@ -88,7 +103,7 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
             className="flex flex-col items-center w-full"
           >
             <Heart className="w-5 h-5 text-[#A91F3D] fill-[#A91F3D] mb-4 opacity-90" />
-            <p className="font-serif text-[#8F1736] text-[14px] italic mb-4 max-w-[280px] leading-relaxed whitespace-pre-line font-medium">
+            <p className="font-serif text-[#42101F] text-[15px] sm:text-[16px] font-bold italic mb-4 max-w-[300px] leading-relaxed whitespace-pre-line drop-shadow-sm">
               {data.heroMessage}
             </p>
             
@@ -108,15 +123,15 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
             <h1 className="font-script text-5xl sm:text-6xl text-[#8F1736] drop-shadow-sm leading-none whitespace-nowrap">
               {data.groom.name}
             </h1>
-            <div className="font-serif text-[12px] text-[#5D4147] flex flex-col items-center gap-1 mt-2 mb-5 font-medium">
-              <p>
+            <div className="font-serif flex flex-col items-center gap-1 mt-2.5 mb-5 text-center">
+              <p className="text-[15px] sm:text-[16px] font-bold text-[#42101F] tracking-wide drop-shadow-sm leading-snug">
                 {data.groom.parents || (data.groom.motherName && data.groom.fatherName 
                   ? `Son of ${data.groom.motherName} & ${data.groom.fatherName}`
                   : data.groom.motherName ? `Son of ${data.groom.motherName}`
                   : data.groom.fatherName ? `Son of ${data.groom.fatherName}` : '')}
               </p>
-              {data.groom.education && <p>{data.groom.education}</p>}
-              {data.groom.profession && <p>{data.groom.profession}</p>}
+              {data.groom.education && <p className="text-[12px] text-[#5D4147] font-medium">{data.groom.education}</p>}
+              {data.groom.profession && <p className="text-[12px] text-[#5D4147] font-medium">{data.groom.profession}</p>}
             </div>
             
             <span className="font-script text-3xl text-[#D995A5] my-1">&amp;</span>
@@ -124,15 +139,15 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
             <h1 className="font-script text-5xl sm:text-6xl text-[#8F1736] drop-shadow-sm leading-none mt-3 whitespace-nowrap">
               {data.bride.name}
             </h1>
-            <div className="font-serif text-[12px] text-[#5D4147] flex flex-col items-center gap-1 mt-2 font-medium">
-              <p>
+            <div className="font-serif flex flex-col items-center gap-1 mt-2.5 text-center">
+              <p className="text-[15px] sm:text-[16px] font-bold text-[#42101F] tracking-wide drop-shadow-sm leading-snug">
                 {data.bride.parents || (data.bride.motherName && data.bride.fatherName 
                   ? `Daughter of ${data.bride.motherName} & ${data.bride.fatherName}`
                   : data.bride.motherName ? `Daughter of ${data.bride.motherName}`
                   : data.bride.fatherName ? `Daughter of ${data.bride.fatherName}` : '')}
               </p>
-              {data.bride.education && <p>{data.bride.education}</p>}
-              {data.bride.profession && <p>{data.bride.profession}</p>}
+              {data.bride.education && <p className="text-[12px] text-[#5D4147] font-medium">{data.bride.education}</p>}
+              {data.bride.profession && <p className="text-[12px] text-[#5D4147] font-medium">{data.bride.profession}</p>}
             </div>
           </motion.div>
         </div>

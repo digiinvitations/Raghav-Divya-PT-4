@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { EventDetails } from "../types";
-import { Clock, CalendarHeart, Sparkles } from "lucide-react";
+import { Clock, CalendarHeart, Sparkles, MapPin } from "lucide-react";
 import confetti from "canvas-confetti";
+import { formatIndianDate } from "../utils/dateFormat";
 
 interface TimelineProps {
   events: EventDetails[];
@@ -152,15 +153,17 @@ function TimelineFlower({ progress, isCelebrating }: { progress: number; isCeleb
 export function Timeline({ events }: TimelineProps) {
   if (!events || events.length === 0) return null;
 
-  // Memoize sorted events to guarantee a stable reference across renders
+  // Memoize sorted events to guarantee a stable reference across renders, preserving sequence
   const sortedEvents = useMemo(() => {
-    return [...events].sort((a, b) => {
-      const dateA = new Date(`${a.date} 2026 ${a.time || '12:00 PM'}`).getTime();
-      const dateB = new Date(`${b.date} 2026 ${b.time || '12:00 PM'}`).getTime();
-      if (!isNaN(dateA) && !isNaN(dateB)) return dateA - dateB;
-      if (a.date !== b.date) return a.date.localeCompare(b.date);
-      return (a.time || "").localeCompare(b.time || "");
-    });
+    return [...events]
+      .map((event, index) => ({ event, index }))
+      .sort((a, b) => {
+        if (a.event.date && b.event.date && a.event.date !== b.event.date) {
+          return a.event.date.localeCompare(b.event.date);
+        }
+        return a.index - b.index;
+      })
+      .map(item => item.event);
   }, [events]);
 
   const timelineContainerRef = useRef<HTMLDivElement>(null);
@@ -439,17 +442,17 @@ export function Timeline({ events }: TimelineProps) {
                 </div>
                 
                 {/* Content Card */}
-                <div className={`bg-white p-5 rounded-2xl border transition-all duration-300 relative w-full flex flex-col gap-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md ${
+                <div className={`bg-white p-4 sm:p-5 rounded-2xl border transition-all duration-300 relative w-full flex flex-col gap-3.5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] hover:shadow-md ${
                   isLast && isCelebrating 
                     ? "border-amber-300 ring-2 ring-amber-200/80 shadow-[0_4px_25px_rgba(245,158,11,0.25)]" 
                     : "border-[#e8e2d9]"
                 }`}>
                   
                   {/* Top row: Circle Image & Title/Tagline */}
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3.5 sm:gap-4">
                     {/* Circular Image */}
                     {event.circularImageUrl ? (
-                      <div className={`w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-full border-2 ${colors.border} overflow-hidden shadow-sm`}>
+                      <div className={`w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-full border-2 ${colors.border} overflow-hidden shadow-sm ring-2 ring-white`}>
                         <img 
                           src={event.circularImageUrl} 
                           alt={event.title} 
@@ -457,50 +460,62 @@ export function Timeline({ events }: TimelineProps) {
                         />
                       </div>
                     ) : (
-                      <div className={`w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-full border-2 ${colors.border} ${colors.light} flex items-center justify-center shadow-sm`}>
-                         <CalendarHeart className={`w-6 h-6 ${colors.text} opacity-50`} />
+                      <div className={`w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-full border-2 ${colors.border} ${colors.light} flex items-center justify-center shadow-sm ring-2 ring-white`}>
+                         <CalendarHeart className={`w-6 h-6 ${colors.text} opacity-60`} />
                       </div>
                     )}
                     
                     {/* Title & Subtitle */}
-                    <div className="flex flex-col">
-                      <h3 className={`font-serif text-lg md:text-xl font-bold uppercase tracking-widest ${colors.text}`}>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      {event.hashtag && (
+                        <span className={`font-serif text-[10px] sm:text-[11px] font-bold tracking-widest ${colors.text} opacity-85 uppercase truncate mb-0.5`}>
+                          {event.hashtag}
+                        </span>
+                      )}
+                      <h3 className={`font-serif text-base sm:text-lg md:text-xl font-extrabold uppercase tracking-wider ${colors.text} leading-tight`}>
                         {event.title}
                       </h3>
-                      {(event.hashtag || event.subtitle) && (
-                        <div className="mt-1 flex flex-col gap-0.5">
-                          {event.subtitle && (
-                            <span className="font-serif text-[10px] md:text-xs uppercase tracking-widest text-[#8a7664] opacity-80">
-                              {event.subtitle}
-                            </span>
-                          )}
-                          {event.hashtag && (
-                            <span className={`font-serif text-[10px] font-bold tracking-widest ${colors.text} opacity-90`}>
-                              {event.hashtag}
-                            </span>
-                          )}
-                        </div>
+                      {event.subtitle && (
+                        <span className="font-serif text-[11px] sm:text-xs text-[#8a7664] font-medium tracking-wide mt-0.5 leading-snug">
+                          {event.subtitle}
+                        </span>
                       )}
                     </div>
                   </div>
 
-                  {/* Details (Date, Description) */}
-                  <div className="flex flex-col gap-2.5 bg-[#faf9f7] rounded-xl p-3.5 border border-[#f3eee8]">
-                    <div className="flex flex-col gap-2">
-                      <p className={`font-serif text-lg md:text-xl uppercase tracking-widest flex items-center gap-2 font-bold ${colors.text}`}>
-                        <Clock className={`w-5 h-5 ${colors.text}`} /> 
-                        {event.date} {event.time ? `• ${event.time}` : ""}
-                      </p>
+                  {/* Clean, Mannerly Schedule Badges: Date, Time & Location (Description removed) */}
+                  <div className={`rounded-xl p-3 sm:p-3.5 border ${colors.border} ${colors.light} flex flex-col gap-2.5`}>
+                    {/* Date & Time Row */}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      {/* Date */}
+                      <div className="flex items-center gap-2">
+                        <div className={`w-7 h-7 rounded-lg bg-white border ${colors.border} flex items-center justify-center shadow-xs shrink-0`}>
+                          <CalendarHeart className={`w-3.5 h-3.5 ${colors.text}`} />
+                        </div>
+                        <span className={`font-serif text-xs sm:text-sm font-bold tracking-wide ${colors.text}`}>
+                          {formatIndianDate(event.date)}
+                        </span>
+                      </div>
+
+                      {/* Time */}
+                      {event.time && (
+                        <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-[#e8e2d9] shadow-xs shrink-0">
+                          <Clock className={`w-3.5 h-3.5 ${colors.text}`} />
+                          <span className={`font-serif text-xs sm:text-sm font-bold tracking-wide ${colors.text}`}>
+                            {event.time}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    {event.description && (
-                      <div className="w-full h-px bg-[#e8e2d9] my-0.5" />
-                    )}
-
-                    {event.description && (
-                      <p className="text-[11px] md:text-xs text-[#705e4f] leading-relaxed font-serif italic whitespace-pre-line">
-                        {event.description}
-                      </p>
+                    {/* Location if present */}
+                    {event.location && (
+                      <div className="flex items-center gap-2 pt-2 border-t border-[#e8e2d9]/60">
+                        <MapPin className={`w-3.5 h-3.5 ${colors.text} shrink-0 opacity-80`} />
+                        <span className="font-serif text-[11px] sm:text-xs font-semibold text-[#5a4838] leading-tight">
+                          {event.location}
+                        </span>
+                      </div>
                     )}
                   </div>
 

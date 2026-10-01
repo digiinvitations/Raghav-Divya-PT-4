@@ -26,7 +26,7 @@ export function InvitationMessage({ message, isHeroEnded }: InvitationMessagePro
           <div className="h-[1px] w-16 bg-gradient-to-l from-transparent to-[#A91F3D]"></div>
         </div>
         
-        <p className="font-serif font-bold text-xl md:text-2xl text-wine-dark leading-relaxed whitespace-pre-line italic px-4 drop-shadow-sm">
+        <p className="font-serif font-bold text-xl md:text-2xl text-[#42101F] leading-relaxed whitespace-pre-line italic px-4 drop-shadow-sm">
           {message}
         </p>
         

@@ -18,13 +18,15 @@ export const weddingData: WeddingData = {
     profession: ""
   },
   weddingDate: "2026-12-18T00:00",
-  weddingDateFormatted: "December 18, 2026",
+  weddingDateFormatted: "18, December 2026",
   weddingTimeFormatted: "12:00 Pm",
   weddingDayFormatted: "Friday",
+  scratchCardDateText: "17 & 18, December 2026",
+  scratchCardDayText: "Thursday & Friday",
   openingThumbnailUrl: "https://www.image2url.com/r2/default/images/1789237269035-f7bfcd75-ee8a-42f6-8328-cdab7e26d297.png",
   openingVideoUrl: "https://www.image2url.com/r2/default/videos/1788612258552-bedd8924-db14-4f5e-a2d2-dc8c4f3fb410.mp4",
   heroVideoUrl: "https://www.image2url.com/r2/default/videos/1788679604945-d9d95635-f097-4a91-bb5d-1445d3d4a247.mp4",
-  ogImageUrl: "https://www.image2url.com/r2/default/images/1788778929798-f2cc899e-7434-46fe-922a-860b9ea18472.jpg",
+  ogImageUrl: "https://www.image2url.com/r2/default/images/1790853594361-ba1e58d8-0950-4857-ba91-f9c6279f9dd2.jpg",
   musicUrl: "https://www.image2url.com/r2/default/audio/1788680385494-eea3ea92-a6be-4b1b-b28a-4a4434ba37de.mp3",
   dressCode: "Formal & Elegant",
   heroMessage: "We are honored to welcome you to the\nWedding ceremony of",
@@ -121,21 +123,21 @@ export const weddingData: WeddingData = {
     {
       id: "tl1",
       title: "Guest Arrival",
-      date: "Jun 30, 2026",
+      date: "18, December 2026",
       time: "10:00 AM",
       description: "We Warmly welcome you..!"
     },
     {
       id: "tl2",
       title: "Wedding Ceremony",
-      date: "Jun 30, 2026",
+      date: "18, December 2026",
       time: "10:30 AM",
       description: "Your gracious presence is requested"
     },
     {
       id: "tl3",
       title: "Reception",
-      date: "Jul 2, 2026",
+      date: "19, December 2026",
       time: "7:30 PM",
       description: "Your gracious presence is requested at the Reception at 7:30 PM onwards."
     }

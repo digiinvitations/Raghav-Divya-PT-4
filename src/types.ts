@@ -63,6 +63,8 @@ export interface WeddingData {
   weddingDateFormatted: string;
   weddingTimeFormatted: string;
   weddingDayFormatted: string;
+  scratchCardDateText?: string;
+  scratchCardDayText?: string;
   openingThumbnailUrl?: string;
   openingVideoUrl?: string;
   heroVideoUrl?: string;

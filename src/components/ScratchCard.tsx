@@ -5,6 +5,7 @@ import { generateIcsFile } from "../utils";
 import { WeddingData } from "../types";
 import { Calendar, Heart } from "lucide-react";
 import confetti from "canvas-confetti";
+import { formatIndianDate } from "../utils/dateFormat";
 
 interface ScratchCardProps {
   data: WeddingData;
@@ -178,16 +179,16 @@ export function ScratchCardSection({ data, onReveal }: ScratchCardProps) {
         >
           {/* Revealed Content (underneath) */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-blush-light">
-            <div className="flex flex-col items-center justify-center mt-4">
-              <p className="font-script text-[1.75rem] text-burgundy mb-3">You're Invited!</p>
-              <p className="font-serif font-bold text-xl text-burgundy tracking-wide">
-                {data.weddingDateFormatted}
+            <div className="flex flex-col items-center justify-center mt-3">
+              <p className="font-script text-[1.85rem] text-burgundy mb-2">You're Invited!</p>
+              <p className="font-serif font-bold text-xl sm:text-2xl text-burgundy tracking-wide drop-shadow-sm whitespace-nowrap">
+                {data.scratchCardDateText || "17 & 18, December 2026"}
               </p>
-              <p className="font-serif text-[0.95rem] text-wine-dark mt-2 opacity-95">
-                {data.weddingDayFormatted}
+              <p className="font-serif text-[1rem] text-wine-dark mt-2 font-medium opacity-95">
+                {data.scratchCardDayText || "Thursday & Friday"}
               </p>
-              <p className="font-serif text-xs text-wine-dark mt-3 opacity-80">
-                {data.weddingTimeFormatted}
+              <p className="font-serif text-xs text-wine-dark mt-2.5 opacity-80">
+                {data.weddingTimeFormatted || "12:00 Pm Onwards"}
               </p>
             </div>
           </div>

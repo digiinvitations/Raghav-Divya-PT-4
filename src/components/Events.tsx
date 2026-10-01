@@ -4,6 +4,7 @@ import { HeartDivider } from "./HeartDivider";
 import { EventDetails } from "../types";
 import { Calendar, MapPin } from "lucide-react";
 import { FloatingLanterns } from "./FloatingLanterns";
+import { formatIndianDate } from "../utils/dateFormat";
 
 interface EventsProps {
   events: EventDetails[];
@@ -120,7 +121,7 @@ function EventCard({ event, index, globalLogo }: { event: EventDetails; index: n
              <div className={`border ${theme.border} rounded-lg px-3 py-1.5 bg-white/30 backdrop-blur-md shadow-sm flex flex-col items-center justify-center gap-0.5 min-w-[120px] shrink-0 w-full`}>
                {(event.showDate !== false || event.showTime !== false) && (
                  <p className={`font-serif text-[9px] sm:text-[10px] tracking-widest ${theme.text} drop-shadow-sm font-extrabold text-center`}>
-                   {[event.showDate !== false ? event.date : null, event.showTime !== false ? event.time : null].filter(Boolean).join(" • ")}
+                   {[event.showDate !== false ? formatIndianDate(event.date) : null, event.showTime !== false ? event.time : null].filter(Boolean).join(" • ")}
                  </p>
                )}
                {event.location && (
@@ -156,15 +157,17 @@ function EventCard({ event, index, globalLogo }: { event: EventDetails; index: n
 export function Events({ events, globalLogo }: EventsProps) {
   if (!events || events.length === 0) return null;
 
-  // Sort events automatically by date/time
+  // Order events by date, while preserving configured sequence when dates are identical
   const sortedEvents = useMemo(() => {
-    return [...events].sort((a, b) => {
-      const dateA = new Date(`${a.date} 2026 ${a.time || '12:00 PM'}`).getTime();
-      const dateB = new Date(`${b.date} 2026 ${b.time || '12:00 PM'}`).getTime();
-      if (!isNaN(dateA) && !isNaN(dateB)) return dateA - dateB;
-      if (a.date !== b.date) return a.date.localeCompare(b.date);
-      return (a.time || "").localeCompare(b.time || "");
-    });
+    return [...events]
+      .map((event, index) => ({ event, index }))
+      .sort((a, b) => {
+        if (a.event.date && b.event.date && a.event.date !== b.event.date) {
+          return a.event.date.localeCompare(b.event.date);
+        }
+        return a.index - b.index;
+      })
+      .map(item => item.event);
   }, [events]);
 
   // Smart Logo Cascading: If the Hero global logo is missing, look for any logo uploaded to ANY event and use it everywhere.

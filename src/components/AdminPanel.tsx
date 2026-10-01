@@ -343,9 +343,11 @@ export function AdminPanel() {
              <h2 className="text-xl font-bold text-wine-dark mb-4">Event Date &amp; Time</h2>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input label="Target Date (Countdown ISO)" value={data.weddingDate} onChange={(v) => handleChange("weddingDate", v)} type="datetime-local" />
-                <Input label="Formatted Date" value={data.weddingDateFormatted} onChange={(v) => handleChange("weddingDateFormatted", v)} />
-                <Input label="Formatted Time" value={data.weddingTimeFormatted} onChange={(v) => handleChange("weddingTimeFormatted", v)} />
-                <Input label="Day of Week" value={data.weddingDayFormatted} onChange={(v) => handleChange("weddingDayFormatted", v)} />
+                <Input label="Formatted Date (Indian Format, e.g., 18, December 2026)" value={data.weddingDateFormatted} onChange={(v) => handleChange("weddingDateFormatted", v)} />
+                <Input label="Formatted Time (e.g., 12:00 Pm)" value={data.weddingTimeFormatted} onChange={(v) => handleChange("weddingTimeFormatted", v)} />
+                <Input label="Day of Week (e.g., Friday)" value={data.weddingDayFormatted} onChange={(v) => handleChange("weddingDayFormatted", v)} />
+                <Input label="Scratch Card Dates (e.g., 17 & 18, December 2026)" value={data.scratchCardDateText || ""} onChange={(v) => handleChange("scratchCardDateText", v)} placeholder="17 & 18, December 2026" />
+                <Input label="Scratch Card Days (e.g., Thursday & Friday)" value={data.scratchCardDayText || ""} onChange={(v) => handleChange("scratchCardDayText", v)} placeholder="Thursday & Friday" />
              </div>
           </section>
 

@@ -145,56 +145,62 @@ function PublicView() {
         <Reveal delay={0.1}><Footer data={data} /></Reveal>
       </main>
 
-      {/* Opening Video Overlay (z-[9999]) */}
-      {data.openingVideoUrl && (
+      {/* Opening Intro Layer (Solid container holding thumbnail and opening video - NO splash, NO gap to hero) */}
+      {(data.openingVideoUrl || data.openingThumbnailUrl) && (
         <div 
-          className={`absolute inset-0 z-[9999] bg-blush-main flex items-center justify-center transition-opacity duration-1000 ease-in-out ${viewState === 'opening-video' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`fixed inset-0 z-[9999] bg-blush-main flex items-center justify-center ${
+            viewState === 'main'
+              ? 'opacity-0 pointer-events-none transition-opacity duration-1000 ease-in-out'
+              : 'opacity-100'
+          }`}
         >
-          <video
-            ref={openingVideoRef}
-            src={data.openingVideoUrl}
-            playsInline
-            muted
-            preload="auto"
-            poster={data.openingThumbnailUrl}
-            onLoadedData={() => setIsVideoPlaying(true)}
-            onCanPlay={() => setIsVideoPlaying(true)}
-            onError={() => {
-              console.error("Failed to load opening video.");
-              setViewState('main');
-            }}
-            onTimeUpdate={(e) => {
-              if (e.currentTarget.currentTime > 0.1) {
-                setIsVideoPlaying(true);
-              }
-            }}
-            onEnded={() => setViewState('main')}
-            onClick={() => setViewState('main')}
-            className="w-full h-full object-contain cursor-pointer"
-          />
-        </div>
-      )}
+          {/* Opening Video */}
+          {data.openingVideoUrl && (
+            <video
+              ref={openingVideoRef}
+              src={data.openingVideoUrl}
+              playsInline
+              muted
+              preload="auto"
+              poster={data.openingThumbnailUrl}
+              onLoadedData={() => setIsVideoPlaying(true)}
+              onCanPlay={() => setIsVideoPlaying(true)}
+              onError={() => {
+                console.error("Failed to load opening video.");
+                setViewState('main');
+              }}
+              onEnded={() => setViewState('main')}
+              onClick={() => {
+                if (viewState === 'opening-video') {
+                  setViewState('main');
+                }
+              }}
+              className="w-full h-full object-contain cursor-pointer"
+            />
+          )}
 
-      {/* Thumbnail Overlay (z-[9999]) */}
-      {data.openingThumbnailUrl && (
-        <div 
-          className={`absolute inset-0 z-[9999] bg-blush-main flex flex-col items-center justify-center cursor-pointer transition-opacity duration-700 ${viewState === 'thumbnail' || (viewState === 'opening-video' && !isVideoPlaying) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          onClick={handleThumbnailClick}
-        >
-          <img 
-            src={data.openingThumbnailUrl} 
-            alt="Opening" 
-            loading="eager"
-            decoding="sync"
-            className="absolute inset-0 w-full h-full object-contain" 
-          />
-          
-          {/* Tap to open indicator */}
-          <div className="absolute bottom-20 z-10 bg-white/40 backdrop-blur-md border border-white/50 px-6 py-2.5 rounded-full shadow-lg flex items-center justify-center animate-pulse">
-            <span className="font-serif text-wine-dark uppercase tracking-widest text-xs font-bold drop-shadow-sm">
-              Tap to open
-            </span>
-          </div>
+          {/* Opening Thumbnail (displayed on top until user taps to play - zero transition, zero flash) */}
+          {data.openingThumbnailUrl && viewState === 'thumbnail' && (
+            <div 
+              className="absolute inset-0 bg-blush-main flex flex-col items-center justify-center cursor-pointer select-none"
+              onClick={handleThumbnailClick}
+            >
+              <img 
+                src={data.openingThumbnailUrl} 
+                alt="Opening" 
+                loading="eager"
+                decoding="sync"
+                className="absolute inset-0 w-full h-full object-contain" 
+              />
+              
+              {/* Tap to open indicator */}
+              <div className="absolute bottom-20 z-10 bg-white/40 backdrop-blur-md border border-white/50 px-6 py-2.5 rounded-full shadow-lg flex items-center justify-center animate-pulse pointer-events-none">
+                <span className="font-serif text-wine-dark uppercase tracking-widest text-xs font-bold drop-shadow-sm">
+                  Tap to open
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
