@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --color-blush-main: #F8E8EA;
+  --color-blush-light: #FDF5F5;
+  --color-wine-dark: #8F1736;
+  --color-burgundy: #A91F3D;
+  --color-pink-accent: #D995A5;
+  --color-pink-border: #E8C7CD;
+  --color-text-body: #5D4147;
+  --color-cream: #FFF9F8;
+
+  --font-script: "Great Vibes", cursive;
+  --font-serif: "Cormorant Garamond", serif;
+}
+
+body {
+  @apply bg-blush-main text-text-body font-serif antialiased overflow-x-hidden;
+}
+
+/* Hide scrollbar for a cleaner look but allow scrolling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-pink-border rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-pink-accent;
+}
+
+/* Environment Animations */
+@keyframes petal-fall {
+  0% { top: -10%; opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { top: 110%; opacity: 0; }
+}
+
+@keyframes petal-sway {
+  0%, 100% { transform: translateX(0px) rotate(0deg); }
+  50% { transform: translateX(50px) rotate(45deg); }
+}
+
+@keyframes fly-across-right {
+  0% { left: -10%; }
+  100% { left: 110%; }
+}
+
+@keyframes fly-across-left {
+  0% { left: 110%; }
+  100% { left: -10%; }
+}
+
+@keyframes fly-bob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-40px); }
+}
+
+@keyframes flap-right {
+  0%, 100% { transform: scaleX(1) rotate(15deg) translateY(0); animation-timing-function: ease-out; }
+  50% { transform: scaleX(0.1) rotate(0deg) translateY(-4px); animation-timing-function: ease-in; }
+}
+
+@keyframes flap-left {
+  0%, 100% { transform: scaleX(-1) rotate(-15deg) translateY(0); animation-timing-function: ease-out; }
+  50% { transform: scaleX(-0.1) rotate(0deg) translateY(-4px); animation-timing-function: ease-in; }
+}
+
+@keyframes lantern-rise {
+  0% { top: 110%; opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { top: -10%; opacity: 0; }
+}
+
+@keyframes lantern-sway {
+  0%, 100% { transform: translateX(-15px) rotate(-5deg); }
+  50% { transform: translateX(15px) rotate(5deg); }
+}
