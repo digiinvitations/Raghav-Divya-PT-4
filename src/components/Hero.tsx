@@ -12,6 +12,7 @@ interface HeroProps {
 export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
   const [showText, setShowText] = useState(!data.heroVideoUrl);
   const [isEnded, setIsEnded] = useState(!data.heroVideoUrl);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -43,7 +44,7 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
   return (
     <section className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-blush-main">
       {/* Background Video or Image */}
-      <div className="absolute inset-0 z-0 bg-blush-main">
+      <div className="absolute inset-0 z-0 bg-blush-main overflow-hidden">
         {data.heroVideoUrl ? (
           <video
             ref={videoRef}
@@ -51,7 +52,8 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
             muted
             playsInline
             preload="auto"
-            poster={data.ogImageUrl || data.openingThumbnailUrl}
+            onLoadedData={() => setIsVideoReady(true)}
+            onCanPlay={() => setIsVideoReady(true)}
             onTimeUpdate={handleTimeUpdate}
             onEnded={handleEnded}
             onError={() => {
@@ -60,7 +62,7 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
               setIsEnded(true);
               if (onVideoEnd) onVideoEnd();
             }}
-            className="w-full h-full object-cover"
+            className={`w-full h-full object-cover transition-opacity duration-700 ease-in-out ${isVideoReady ? 'opacity-100' : 'opacity-0'}`}
           />
         ) : (
           <div 

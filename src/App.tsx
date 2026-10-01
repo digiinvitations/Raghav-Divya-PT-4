@@ -148,7 +148,7 @@ function PublicView() {
       {/* Opening Video Overlay (z-[9999]) */}
       {data.openingVideoUrl && (
         <div 
-          className={`absolute inset-0 z-[9999] bg-blush-main flex items-center justify-center ${viewState === 'opening-video' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          className={`absolute inset-0 z-[9999] bg-blush-main flex items-center justify-center transition-opacity duration-1000 ease-in-out ${viewState === 'opening-video' ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         >
           <video
             ref={openingVideoRef}

@@ -76,17 +76,37 @@ export function getDefaultTemplateId(): string {
 
 /**
  * Retrieves wedding data for a template/remix partition.
- * If this remix partition document does not exist yet in Firestore,
- * it immediately creates a new separate document and fields, populated with
- * the complete copy of the project data (Raghav & Divya).
+ * Includes local storage caching and timeout resilience so connection drops
+ * or Firestore offline states never block or break the user experience.
  */
 export async function getWeddingData(templateId?: string): Promise<WeddingData> {
   const currentTemplate = (templateId && templateId.trim()) ? templateId.trim() : getDefaultTemplateId();
   const safeTemplateId = currentTemplate.replace(/\//g, "-");
+  const cacheKey = `cached_wedding_data_${safeTemplateId}`;
+
+  // Read local cache if available for instant offline fallback
+  let cachedData: WeddingData | null = null;
+  if (typeof window !== "undefined") {
+    try {
+      const stored = localStorage.getItem(cacheKey);
+      if (stored) {
+        cachedData = JSON.parse(stored) as WeddingData;
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }
 
   try {
     const docRef = doc(db, "weddingConfig", safeTemplateId);
-    const docSnap = await getDoc(docRef);
+
+    // Timeout race: prevent long hangs if connection is unavailable
+    const fetchDocPromise = getDoc(docRef);
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Firestore connection timeout")), 3500)
+    );
+
+    const docSnap = await Promise.race([fetchDocPromise, timeoutPromise]);
 
     if (docSnap.exists()) {
       const data = docSnap.data() as WeddingData;
@@ -133,7 +153,16 @@ export async function getWeddingData(templateId?: string): Promise<WeddingData> 
           });
         }
         // Save the healed data back to Firestore so it is permanently updated
-        setDoc(docRef, data, { merge: true }).catch(console.error);
+        setDoc(docRef, data, { merge: true }).catch(() => {});
+      }
+
+      // Save to local cache for instant future loads
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(data));
+        } catch {
+          // Ignore
+        }
       }
 
       return data;
@@ -144,16 +173,18 @@ export async function getWeddingData(templateId?: string): Promise<WeddingData> 
       let sourceData: WeddingData = defaultData;
 
       try {
-        const parentDocSnap = await getDoc(doc(db, "weddingConfig", PARENT_TEMPLATE_ID));
+        const parentDocSnap = await Promise.race([
+          getDoc(doc(db, "weddingConfig", PARENT_TEMPLATE_ID)),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000))
+        ]);
         if (parentDocSnap.exists()) {
           const parentData = parentDocSnap.data() as WeddingData;
-          // Ensure we only inherit from parent if parent is not old Vijay/Vashnavi
           if (!parentData.groom?.name?.includes("Vijay")) {
             sourceData = parentData;
           }
         }
-      } catch (err) {
-        console.warn("Could not read parent template data, using bundled default data:", err);
+      } catch {
+        // Fallback to defaultData silently
       }
 
       // Deep clone to create a totally fresh independent data record
@@ -168,15 +199,27 @@ export async function getWeddingData(templateId?: string): Promise<WeddingData> 
       // Persist the copied data directly into this new remix's isolated document
       try {
         await setDoc(docRef, cleanData);
-      } catch (saveErr) {
-        console.error("Error creating initial document in Firestore:", saveErr);
+      } catch {
+        // Offline: data remains in local cache
+      }
+
+      // Cache locally
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(cleanData));
+        } catch {
+          // Ignore
+        }
       }
 
       return cleanData as WeddingData;
     }
-  } catch (error) {
-    console.error("Error fetching wedding data:", error);
-    return defaultData; // Fallback
+  } catch {
+    // Offline or connection timeout: gracefully use cached or default data
+    if (cachedData) {
+      return cachedData;
+    }
+    return defaultData; // Safe default fallback
   }
 }
 
