@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Heart, Instagram, Settings, X, KeyRound } from "lucide-react";
+import { Heart, Instagram, Settings, X, KeyRound, Phone, MessageCircle } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { WeddingData } from "../types";
 import { getDefaultTemplateId } from "../services/db";
@@ -43,12 +43,38 @@ export function Footer({ data }: FooterProps) {
             target="_blank" 
             rel="noopener noreferrer"
             className="hover:text-pink-accent transition-colors"
+            title="Instagram"
           >
             <Instagram className="w-4 h-4" />
           </a>
         </p>
-        <p className="text-[10px] tracking-widest font-semibold opacity-70">
-          To Create Yours Contact: - 9456411569
+
+        <p className="text-xs tracking-wider font-semibold opacity-90 mt-1">
+          To Create Your Custom Invitation Website:
+        </p>
+
+        {/* Contact Creator Buttons */}
+        <div className="flex items-center gap-3 mt-1 flex-wrap justify-center">
+          <a 
+            href="tel:+919456411569" 
+            className="flex items-center gap-2 px-4 py-2 bg-wine-dark text-white rounded-full shadow-sm hover:bg-burgundy transition-all text-xs font-sans font-semibold tracking-wide active:scale-95"
+          >
+            <Phone className="w-3.5 h-3.5" />
+            Call Now
+          </a>
+          <a 
+            href="https://wa.me/919456411569?text=Hello%20digiinvitations_%2C%20I%20would%20like%20to%20create%20a%20wedding%20invitation%20website!" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 px-4 py-2 bg-[#25D366] text-white rounded-full shadow-sm hover:bg-[#20ba5a] transition-all text-xs font-sans font-semibold tracking-wide active:scale-95"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            WhatsApp
+          </a>
+        </div>
+
+        <p className="text-[11px] tracking-widest font-semibold opacity-75 mt-0.5">
+          Phone: +91 9456411569
         </p>
       </div>
 
