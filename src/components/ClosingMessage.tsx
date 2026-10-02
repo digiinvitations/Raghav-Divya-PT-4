@@ -60,7 +60,7 @@ export function ClosingMessage({ data }: ClosingMessageProps) {
         </p>
         
         <h3 className="font-script text-4xl md:text-5xl text-[#9E263D] mt-4 tracking-wide">
-          {data.groom.name} &amp; {data.bride.name}
+          {data.bride.name} &amp; {data.groom.name}
         </h3>
       </motion.div>
 

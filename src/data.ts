@@ -30,7 +30,7 @@ export const weddingData: WeddingData = {
   musicUrl: "https://www.image2url.com/r2/default/audio/1788680385494-eea3ea92-a6be-4b1b-b28a-4a4434ba37de.mp3",
   dressCode: "Formal & Elegant",
   heroMessage: "We are honored to welcome you to the\nWedding ceremony of",
-  invitationMessage: "We are honored to welcome you to the\nWedding ceremony of Raghav & Divya as they\nbegin their journey together in faith and\nlove,\nwe thank you for being part of this blessed\noccasion",
+  invitationMessage: "We are honored to welcome you to the\nWedding ceremony of Divya & Raghav as they\nbegin their journey together in faith and\nlove,\nwe thank you for being part of this blessed\noccasion",
   closingMessage: "We can't wait to celebrate\nwith you!",
   transportation: "Transportation service will be available\nfrom the designated pickup center to the venue.\nPickup point: Central Station",
   venue: {

@@ -41,7 +41,6 @@ export function RSVP({ templateId }: RSVPProps) {
     const attendingVal = formData.get("attending");
     const rsvpData = {
       name: formData.get("name"),
-      email: formData.get("email"),
       attending: attendingVal,
       numberOfPeople: attendingVal === "no" ? "0" : (formData.get("numberOfPeople") || "1"),
       message: formData.get("message")
@@ -96,19 +95,6 @@ export function RSVP({ templateId }: RSVPProps) {
                 name="name"
                 required 
                 placeholder="Your full name"
-                className="w-full bg-transparent border border-pink-border/80 rounded-md px-4 py-3 text-sm focus:outline-none focus:border-pink-accent focus:ring-1 focus:ring-pink-accent transition-colors"
-                disabled={status === "submitting"}
-              />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label htmlFor="email" className="text-xs font-semibold text-text-body pl-1">Email *</label>
-              <input 
-                type="email" 
-                id="email" 
-                name="email"
-                required 
-                placeholder="you@example.com"
                 className="w-full bg-transparent border border-pink-border/80 rounded-md px-4 py-3 text-sm focus:outline-none focus:border-pink-accent focus:ring-1 focus:ring-pink-accent transition-colors"
                 disabled={status === "submitting"}
               />
@@ -253,7 +239,6 @@ export function RSVP({ templateId }: RSVPProps) {
                           </span>
                         </div>
                       </div>
-                      <p className="text-xs text-wine-dark/70 mb-2">{rsvp.email}</p>
                       {rsvp.message && (
                         <p className="text-xs text-wine-dark italic border-l-2 border-pink-border pl-2.5 py-0.5 my-2 bg-white/40 rounded-r">
                           "{rsvp.message}"

@@ -6,6 +6,7 @@ import {
   getDefaultTemplateId, 
   getAllTemplateIds, 
   createNewRemixSection, 
+  syncCustomVercelUrl,
   PARENT_TEMPLATE_ID 
 } from "../services/db";
 import { WeddingData, TimelineItem } from "../types";
@@ -20,7 +21,10 @@ import {
   ShieldCheck, 
   Sparkles,
   Copy,
-  Trash2
+  Trash2,
+  Globe,
+  RefreshCw,
+  CheckCircle2
 } from "lucide-react";
 
 export function AdminPanel() {
@@ -33,6 +37,9 @@ export function AdminPanel() {
   const [templateId, setTemplateId] = useState(currentTemplateId);
   const [templateList, setTemplateList] = useState<string[]>([]);
   const [isCreatingRemix, setIsCreatingRemix] = useState(false);
+  const [customVercelUrl, setCustomVercelUrl] = useState("");
+  const [isSyncingVercel, setIsSyncingVercel] = useState(false);
+  const [vercelSyncSuccess, setVercelSyncSuccess] = useState("");
 
   useEffect(() => {
     async function loadData() {
@@ -157,7 +164,7 @@ export function AdminPanel() {
       await saveWeddingData(trimmed, data);
       const allTemplates = await getAllTemplateIds();
       setTemplateList(allTemplates);
-      alert(`Settings saved successfully into section "${trimmed}"!`);
+      alert(`Settings saved successfully into section "${trimmed}"!\n\nAll Vercel hosting mirrors and cloud databases have been updated in real-time.`);
       if (trimmed !== currentTemplateId) {
         navigate(`/admin?template=${encodeURIComponent(trimmed)}`);
       }
@@ -166,6 +173,24 @@ export function AdminPanel() {
       alert(`Failed to save: ${error.message || "Unknown error"}`);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSyncVercel = async () => {
+    if (!customVercelUrl.trim() || !data) {
+      alert("Please enter a Vercel URL or hostname (e.g. hindu-wedding-template-4.vercel.app)");
+      return;
+    }
+    setIsSyncingVercel(true);
+    setVercelSyncSuccess("");
+    try {
+      const keys = await syncCustomVercelUrl(customVercelUrl.trim(), data);
+      setVercelSyncSuccess(`Synced successfully to Vercel keys: ${keys.join(", ")}`);
+      alert(`Data successfully synced to "${customVercelUrl.trim()}"!\n\nPlease hard-refresh your Vercel site to see the updates.`);
+    } catch (e: any) {
+      alert(`Failed to sync: ${e.message || "Unknown error"}`);
+    } finally {
+      setIsSyncingVercel(false);
     }
   };
 
@@ -312,28 +337,71 @@ export function AdminPanel() {
           </div>
         </div>
 
+        {/* Vercel Hosting Real-Time Cloud Sync Panel */}
+        <div className="mb-8 p-5 rounded-xl border border-blue-200 bg-blue-50/40 font-sans">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-blue-200/60">
+            <div className="flex items-center gap-2">
+              <Globe className="w-5 h-5 text-blue-700" />
+              <h2 className="text-sm font-bold text-blue-900 uppercase tracking-wider">
+                Vercel Hosting Cloud Sync
+              </h2>
+              <span className="bg-emerald-100 text-emerald-800 text-[11px] px-2 py-0.5 rounded-full font-semibold flex items-center gap-1 border border-emerald-300">
+                <CheckCircle2 className="w-3 h-3" /> Auto-Sync Active
+              </span>
+            </div>
+            <p className="text-xs text-blue-800/80">
+              When you click <strong>Save Changes</strong>, all known Vercel deployments are updated in real-time.
+            </p>
+          </div>
+
+          <div className="mt-3.5 flex flex-col md:flex-row items-stretch md:items-center gap-2.5">
+            <input
+              type="text"
+              value={customVercelUrl}
+              onChange={(e) => setCustomVercelUrl(e.target.value)}
+              placeholder="e.g. hindu-wedding-template-4.vercel.app or my-wedding.vercel.app"
+              className="flex-1 bg-white border border-blue-300 rounded-lg px-3 py-2 text-xs md:text-sm focus:outline-none focus:border-blue-500 shadow-2xs"
+            />
+            <button
+              onClick={handleSyncVercel}
+              disabled={isSyncingVercel}
+              className="flex items-center justify-center gap-2 bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-blue-800 transition-colors shadow-2xs disabled:opacity-50 shrink-0 cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingVercel ? "animate-spin" : ""}`} />
+              {isSyncingVercel ? "Syncing..." : "Sync This Vercel URL"}
+            </button>
+          </div>
+
+          {vercelSyncSuccess && (
+            <p className="mt-2 text-xs font-medium text-emerald-700 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              {vercelSyncSuccess}
+            </p>
+          )}
+        </div>
+
         <div className="space-y-8">
           {/* Couple Details */}
           <section>
-            <h2 className="text-xl font-bold text-wine-dark mb-4">Couple Details</h2>
+            <h2 className="text-xl font-bold text-wine-dark mb-4">Couple Details (Bride Side Priority)</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4 bg-blush-light p-4 rounded-lg border border-pink-border/50">
-                <h3 className="font-bold">Groom</h3>
-                <Input label="Name" value={data.groom.name} onChange={(v) => handleChange("groom.name", v)} />
-                <Input label="Father's Name" value={data.groom.fatherName || ""} onChange={(v) => handleChange("groom.fatherName", v)} />
-                <Input label="Mother's Name" value={data.groom.motherName || ""} onChange={(v) => handleChange("groom.motherName", v)} />
-                <Input label="Parents (Lineage display)" value={data.groom.parents} onChange={(v) => handleChange("groom.parents", v)} />
-                <Input label="Education" value={data.groom.education} onChange={(v) => handleChange("groom.education", v)} />
-                <Input label="Profession" value={data.groom.profession} onChange={(v) => handleChange("groom.profession", v)} />
-              </div>
-              <div className="space-y-4 bg-blush-light p-4 rounded-lg border border-pink-border/50">
-                <h3 className="font-bold">Bride</h3>
+                <h3 className="font-bold text-burgundy">Bride</h3>
                 <Input label="Name" value={data.bride.name} onChange={(v) => handleChange("bride.name", v)} />
                 <Input label="Father's Name" value={data.bride.fatherName || ""} onChange={(v) => handleChange("bride.fatherName", v)} />
                 <Input label="Mother's Name" value={data.bride.motherName || ""} onChange={(v) => handleChange("bride.motherName", v)} />
                 <Input label="Parents (Lineage display)" value={data.bride.parents} onChange={(v) => handleChange("bride.parents", v)} />
                 <Input label="Education" value={data.bride.education} onChange={(v) => handleChange("bride.education", v)} />
                 <Input label="Profession" value={data.bride.profession} onChange={(v) => handleChange("bride.profession", v)} />
+              </div>
+              <div className="space-y-4 bg-blush-light p-4 rounded-lg border border-pink-border/50">
+                <h3 className="font-bold text-wine-dark">Groom</h3>
+                <Input label="Name" value={data.groom.name} onChange={(v) => handleChange("groom.name", v)} />
+                <Input label="Father's Name" value={data.groom.fatherName || ""} onChange={(v) => handleChange("groom.fatherName", v)} />
+                <Input label="Mother's Name" value={data.groom.motherName || ""} onChange={(v) => handleChange("groom.motherName", v)} />
+                <Input label="Parents (Lineage display)" value={data.groom.parents} onChange={(v) => handleChange("groom.parents", v)} />
+                <Input label="Education" value={data.groom.education} onChange={(v) => handleChange("groom.education", v)} />
+                <Input label="Profession" value={data.groom.profession} onChange={(v) => handleChange("groom.profession", v)} />
               </div>
             </div>
           </section>

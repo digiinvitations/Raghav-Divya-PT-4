@@ -14,7 +14,7 @@ export function Venue({ venue, groom, bride, weddingDate }: VenueProps) {
   // Generate Google Calendar URL
   let calendarUrl = "";
   if (groom && bride && weddingDate) {
-    const title = encodeURIComponent(`Wedding of ${groom.name} & ${bride.name}`);
+    const title = encodeURIComponent(`Wedding of ${bride.name} & ${groom.name}`);
     const location = encodeURIComponent(`${venue.name}, ${venue.addressLine1}, ${venue.addressLine2}`);
     
     // Convert to ISO string and remove punctuation for Google Calendar format (YYYYMMDDTHHMMSSZ)

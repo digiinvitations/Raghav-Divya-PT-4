@@ -69,11 +69,11 @@ function PublicView() {
   };
 
   useEffect(() => {
-    if (data?.groom?.name && data?.bride?.name) {
-      const pageTitle = `${data.groom.name} & ${data.bride.name} | Wedding Invitation`;
+    if (data?.bride?.name && data?.groom?.name) {
+      const pageTitle = `${data.bride.name} & ${data.groom.name} | Wedding Invitation`;
       document.title = pageTitle;
 
-      const desc = `You are invited to the wedding of ${data.groom.name} & ${data.bride.name}.`;
+      const desc = `You are invited to the wedding of ${data.bride.name} & ${data.groom.name}.`;
       const descMeta = document.querySelector('meta[name="description"]');
       if (descMeta) descMeta.setAttribute('content', desc);
 

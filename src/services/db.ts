@@ -106,7 +106,7 @@ export async function getWeddingData(templateId?: string): Promise<WeddingData> 
         if (data.events && Array.isArray(data.events)) {
           data.events = data.events.map(ev => {
             if (ev.hashtag && (ev.hashtag.includes("Vijay") || ev.hashtag.includes("Vashnavi"))) {
-              return { ...ev, hashtag: "#RaghavKiDivya" };
+              return { ...ev, hashtag: "#DivyaKiRaghav" };
             }
             return ev;
           });
@@ -210,12 +210,18 @@ export async function saveWeddingData(templateId: string, data: WeddingData): Pr
 
   // Also sync to all Vercel and hosting mirror documents so Vercel is always 100% updated in real-time
   const VERCEL_MIRRORS = [
+    "wedding_data_hindu-wedding-template-4_vercel_app",
     "remix_raghavwedsdivya-digiinvitations_vercel_app",
     "remix_raghavwedsdivya-digiinvitationsggghh_vercel_app",
     "wedding_data_raghavwedsdivya-digiinvitations_vercel_app",
     "wedding_data_raghavwedsdivya-digiinvitationsggghh_vercel_app",
     "ais-dev-t2ilutj4md24vn2jr5zc7g-14313311583.asia-southeast1.run.app",
-    "ais-pre-t2ilutj4md24vn2jr5zc7g-14313311583.asia-southeast1.run.app"
+    "ais-pre-t2ilutj4md24vn2jr5zc7g-14313311583.asia-southeast1.run.app",
+    "main",
+    "main 222",
+    "main 333",
+    "Premium wedding template 4",
+    "NEW TEMPLATE FOR 7"
   ];
 
   if (safeTemplateId === MASTER_TEMPLATE_ID || VERCEL_MIRRORS.includes(safeTemplateId)) {
@@ -229,6 +235,33 @@ export async function saveWeddingData(templateId: string, data: WeddingData): Pr
       // non-blocking
     }
   }
+}
+
+/**
+ * Synchronizes current wedding data to any specific custom Vercel domain or hostname.
+ */
+export async function syncCustomVercelUrl(rawInput: string, data: WeddingData): Promise<string[]> {
+  const cleanData: any = JSON.parse(JSON.stringify(data));
+  cleanData._updatedAt = new Date().toISOString();
+
+  // Strip https://, http://, and slashes
+  const host = rawInput.replace(/^https?:\/\//, "").split("/")[0].trim();
+  const safeHost = host.replace(/[^a-zA-Z0-9_-]/g, "_");
+  
+  const keysToSync = [
+    host,
+    safeHost,
+    `wedding_data_${safeHost}`,
+    `remix_${safeHost}`
+  ];
+
+  const uniqueKeys = Array.from(new Set(keysToSync.filter(Boolean)));
+
+  await Promise.allSettled(
+    uniqueKeys.map(k => setDoc(doc(db, "weddingConfig", k), { ...cleanData, _templateId: k }))
+  );
+
+  return uniqueKeys;
 }
 
 /**

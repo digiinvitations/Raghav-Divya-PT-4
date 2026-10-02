@@ -14,9 +14,9 @@ UID:${startDate.getTime()}@wedding.com
 DTSTAMP:${formatDate(new Date())}
 DTSTART:${formatDate(startDate)}
 DTEND:${formatDate(endDate)}
-SUMMARY:Wedding of ${weddingData.groom.name} & ${weddingData.bride.name}
+SUMMARY:Wedding of ${weddingData.bride.name} & ${weddingData.groom.name}
 LOCATION:${weddingData.venue.name}, ${weddingData.venue.addressLine1}
-DESCRIPTION:Join us to celebrate the wedding of ${weddingData.groom.name} & ${weddingData.bride.name}.
+DESCRIPTION:Join us to celebrate the wedding of ${weddingData.bride.name} & ${weddingData.groom.name}.
 END:VEVENT
 END:VCALENDAR`;
 

@@ -121,25 +121,9 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
             className="flex flex-col items-center justify-center w-full"
           >
             <h1 className="font-script text-5xl sm:text-6xl text-[#8F1736] drop-shadow-sm leading-none whitespace-nowrap">
-              {data.groom.name}
-            </h1>
-            <div className="font-serif flex flex-col items-center gap-1 mt-2.5 mb-5 text-center">
-              <p className="text-[15px] sm:text-[16px] font-bold text-[#42101F] tracking-wide drop-shadow-sm leading-snug">
-                {data.groom.parents || (data.groom.motherName && data.groom.fatherName 
-                  ? `Son of ${data.groom.motherName} & ${data.groom.fatherName}`
-                  : data.groom.motherName ? `Son of ${data.groom.motherName}`
-                  : data.groom.fatherName ? `Son of ${data.groom.fatherName}` : '')}
-              </p>
-              {data.groom.education && <p className="text-[12px] text-[#5D4147] font-medium">{data.groom.education}</p>}
-              {data.groom.profession && <p className="text-[12px] text-[#5D4147] font-medium">{data.groom.profession}</p>}
-            </div>
-            
-            <span className="font-script text-3xl text-[#D995A5] my-1">&amp;</span>
-            
-            <h1 className="font-script text-5xl sm:text-6xl text-[#8F1736] drop-shadow-sm leading-none mt-3 whitespace-nowrap">
               {data.bride.name}
             </h1>
-            <div className="font-serif flex flex-col items-center gap-1 mt-2.5 text-center">
+            <div className="font-serif flex flex-col items-center gap-1 mt-2.5 mb-5 text-center">
               <p className="text-[15px] sm:text-[16px] font-bold text-[#42101F] tracking-wide drop-shadow-sm leading-snug">
                 {data.bride.parents || (data.bride.motherName && data.bride.fatherName 
                   ? `Daughter of ${data.bride.motherName} & ${data.bride.fatherName}`
@@ -148,6 +132,22 @@ export function Hero({ data, shouldPlayVideo = true, onVideoEnd }: HeroProps) {
               </p>
               {data.bride.education && <p className="text-[12px] text-[#5D4147] font-medium">{data.bride.education}</p>}
               {data.bride.profession && <p className="text-[12px] text-[#5D4147] font-medium">{data.bride.profession}</p>}
+            </div>
+            
+            <span className="font-script text-3xl text-[#D995A5] my-1">&amp;</span>
+            
+            <h1 className="font-script text-5xl sm:text-6xl text-[#8F1736] drop-shadow-sm leading-none mt-3 whitespace-nowrap">
+              {data.groom.name}
+            </h1>
+            <div className="font-serif flex flex-col items-center gap-1 mt-2.5 text-center">
+              <p className="text-[15px] sm:text-[16px] font-bold text-[#42101F] tracking-wide drop-shadow-sm leading-snug">
+                {data.groom.parents || (data.groom.motherName && data.groom.fatherName 
+                  ? `Son of ${data.groom.motherName} & ${data.groom.fatherName}`
+                  : data.groom.motherName ? `Son of ${data.groom.motherName}`
+                  : data.groom.fatherName ? `Son of ${data.groom.fatherName}` : '')}
+              </p>
+              {data.groom.education && <p className="text-[12px] text-[#5D4147] font-medium">{data.groom.education}</p>}
+              {data.groom.profession && <p className="text-[12px] text-[#5D4147] font-medium">{data.groom.profession}</p>}
             </div>
           </motion.div>
         </div>
